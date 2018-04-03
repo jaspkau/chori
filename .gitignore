@@ -1,0 +1,7 @@
+# ignore os .directory files
+.directory 
+# ignore temporary R files
+.Rhistory
+.RData
+.Rdata
+
