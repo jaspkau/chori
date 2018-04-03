@@ -13,7 +13,7 @@ germ.sto.17 <- subset(germ.sto, Year == 2017)
 #Visual comparisons of and regression ------------------------------------------------------------------------
 
 library(ggplot2)
-3library(pscl)
+library(pscl)
 
 #Comparison of germination across sites and storage treatmnets in 2016
 
