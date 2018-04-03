@@ -1,4 +1,4 @@
-setwd("C:\\Users\\jaspkaur\\Google Drive\\data_analysis\\chorizanthe\\mar2018/")
+#setwd("C:\\Users\\jaspkaur\\Google Drive\\data_analysis\\chorizanthe\\mar2018/")
 
 # import AR germination data -----------------------------------------
 
@@ -13,7 +13,7 @@ germ.sto.17 <- subset(germ.sto, Year == 2017)
 #Visual comparisons of and regression ------------------------------------------------------------------------
 
 library(ggplot2)
-library(pscl)
+3library(pscl)
 
 #Comparison of germination across sites and storage treatmnets in 2016
 
