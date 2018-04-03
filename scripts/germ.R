@@ -3,6 +3,9 @@
 # import AR germination data -----------------------------------------
 
 library(readxl)
+# DWS: you should document that code expects working directory to be root of
+# the git repo. This is fine (less convenient for me than if working dir is
+# scripts dir, but that is fine as long as documented.
 germ.sto <- read_excel("data/growth_germ.xlsx", sheet = 4)
 
 germ.sto$Diameter = round(germ.sto$Diameter, digits = 0)
@@ -25,12 +28,12 @@ library(pscl)
 #humidity (RTNSI) and for longer period (2013) of time will have lower germination.
 
 ggplot(germ.sto.16, aes(Site, Germ)) + geom_jitter(width=0.2, height=0.1)
+ggplot(germ.sto.16, aes(trt, Germ)) + geom_jitter(width=0.2, height=0.1) + facet_grid(. ~ Site)
 
-ggplot(germ.sto.16, aes(trt, Germ)) + geom_jitter(width=0.2, height=0.1)
-
-g.mod <- glm(Germ ~ Site + trt, family = poisson, data=germ.sto.16)
+g.mod <- glm(Germ ~ Site * trt, family = poisson, data=germ.sto.16)
 summary(g.mod)
-anova(g.mod)
+g.mod.null <- glm(Germ ~ 1, family = poisson, data=germ.sto.16)
+anova(g.mod.null, g.mod, test="Chisq")
 
 #Comparison of plant diameter across sites and stoarge treatmnets in 2016
 
@@ -40,28 +43,39 @@ anova(g.mod)
 
 ggplot(germ.sto.16, aes(Site, Diameter)) + geom_jitter(width=0.2, height=0.1)
 
-ggplot(germ.sto.16, aes(trt, Diameter)) + geom_jitter(width=0.2, height=0.1)
+ggplot(germ.sto.16, aes(trt, Diameter)) + geom_jitter(width=0.2, height=0.1)  +
+  facet_grid(. ~ Site)
 
-g.mod <- glm(Diameter ~ Site + trt, data=germ.sto.16)
+g.mod <- glm(Diameter ~ Site * trt, data=germ.sto.16)
+g.mod.null <- glm(Diameter ~ Site, data=germ.sto.16)
 summary(g.mod)
-anova(g.mod)
+anova(g.mod, g.mod.null, test="Chisq")
+
+## DWS: so where is the hypothesis test? These model does not represent the
+## hypothesis listed (compare E012 with others)
 
 ##Comparison of germination across sites and storage treatments in 2017
 
 #Hypotheses: Germination will be higher at site with extant
 #population of Chorizanthe (EO12) in comparions to new introduction
-#sites (EO14, NPS1, NPS2).Germination will be higher among seeds stored in
+#sites (EO14, NPS1, NPS2).
+
+
+## DWS: so no support for this hypothesis at all.
+
+#Germination will be higher among seeds stored in
 #ambient conditions in native soil (SS12 and SS14) in comparison to seeds stored 
 #at a constant temperature and relative humidity (RTSI and RTNSI). Seeds stored at high relative
 #humidity or soil moisture will have lower germination.
 
 ggplot(germ.sto.17, aes(Site, Germ)) + geom_jitter(width=0.2, height=0.1)
-
-ggplot(germ.sto.17, aes(trt, Germ)) + geom_jitter(width=0.2, height=0.1)
+ggplot(germ.sto.17, aes(trt, Germ)) + geom_jitter(width=0.2, height=0.1) + facet_grid(. ~ Site)
 
 g.mod <- glm(Germ ~ Site + trt, family = poisson, data=germ.sto.17)
 summary(g.mod)
 anova(g.mod)
+
+## DWS: why that model (no interaction), why no test?  What is question?
 
 #Comparison of plant Diameter across sites and storage treatmnets in 2017
 
@@ -104,7 +118,6 @@ summary(g.mod)
 anova(g.mod)
 
 # import micorenvironment data --------------------------------------------
-
 germ.env <- read_excel("data/growth_germ.xlsx", sheet = 3)
 
 germ.env.15 <- subset(germ.env, Year == 2015)
