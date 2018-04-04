@@ -7,8 +7,12 @@ library(readxl)
 # the git repo. This is fine (less convenient for me than if working dir is
 # scripts dir, but that is fine as long as documented.
 germ.sto <- read_excel("data/growth_germ.xlsx", sheet = 4)
+germ.sto$Year <- factor(germ.sto$Year)
+germ.sto$Diameter <- round(germ.sto$Diameter, digits = 0)
+germ.sto$Native <- germ.sto$Site=="EO12"
+germ.sto <- subset(germ.sto, trt != "2013")
 
-germ.sto$Diameter = round(germ.sto$Diameter, digits = 0)
+germ.sto <- subset(germ.sto, trt == "RTSI" | trt== "RTNSI")
 
 germ.sto.16 <- subset(germ.sto, Year == 2016)
 germ.sto.17 <- subset(germ.sto, Year == 2017)
@@ -27,12 +31,17 @@ library(pscl)
 #at a constant temperature and relative humidity (RTSI and RTNSI). Seeds stored at high relative
 #humidity (RTNSI) and for longer period (2013) of time will have lower germination.
 
-ggplot(germ.sto.16, aes(Site, Germ)) + geom_jitter(width=0.2, height=0.1)
+ggplot(germ.sto, aes(Site, Germ)) + geom_jitter(width=0.2, height=0.1)
+ggplot(germ.sto, aes(Native, Germ, color=Year)) + geom_jitter(width=0.2, height=0.1)
+
+ggplot(germ.sto, aes(trt, Germ, color=Year)) + geom_jitter(width=0.2, height=0.1) + facet_grid(. ~ Site)
+
 ggplot(germ.sto.16, aes(trt, Germ)) + geom_jitter(width=0.2, height=0.1) + facet_grid(. ~ Site)
 
-g.mod <- glm(Germ ~ Site * trt, family = poisson, data=germ.sto.16)
+g.mod <- glmer(Germ ~ trt + (trt | Site) + (1 | Year), family = poisson, data=germ.sto)
+g.mod.null <- glmer(Germ ~ 1 + (trt | Site) + (1 | Year), family = poisson, data=germ.sto)
+
 summary(g.mod)
-g.mod.null <- glm(Germ ~ 1, family = poisson, data=germ.sto.16)
 anova(g.mod.null, g.mod, test="Chisq")
 
 #Comparison of plant diameter across sites and stoarge treatmnets in 2016
@@ -96,9 +105,9 @@ anova(g.mod)
 
 ggplot(germ.sto, aes(Site, dr.st)) + geom_jitter(width=0.2, height=0.1) + facet_grid(. ~ Year)
 
-g.mod <- glm(Germ ~ dr.st, data=germ.sto.16)
+g.mod <- glm(, data=germ.sto.16)
 summary(g.mod)
-anova(g.mod)
+anova(g.mod, test="Chisq")
 
 g.mod <- glm(Germ ~ dr.st, data=germ.sto.17)
 summary(g.mod)
@@ -142,7 +151,7 @@ ggplot(germ.env.15, aes(involucre, Germ)) + geom_jitter(width=0.2, height=0.1)
 
 g.mod <- glm(Germ ~ Site + water + shade + involucre, family = poisson, data=germ.env.15)
 summary(g.mod)
-anova(g.mod)
+anova(g.mod, test="Chisq")
 
 
 #2017 germination
@@ -159,5 +168,5 @@ ggplot(germ.env.17, aes(shade, Germ)) + geom_jitter(width=0.2, height=0.1) + fac
 
 g.mod <- glm(Germ ~ Site + water + shade, family = poisson, data=germ.env.17)
 summary(g.mod)
-anova(g.mod)
+anova(g.mod, test="Chisq")
 
