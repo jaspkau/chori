@@ -16,17 +16,16 @@ library(ggplot2)
 #Spatiotemporal variation in plant diameter
 ggplot(growth, aes(Site, Diameter)) + geom_point() + facet_grid(. ~ Year)
 
-g.mod <- glm(Diameter ~ Site*Year, data=growth)
+g.mod <- lm(Diameter ~ Site*Year, data=growth)
 summary(g.mod)
 anova(g.mod)
 
 #Spatiotemporal variation in fecundity
 
-ggplot(growth_inv, aes( Site, Involucres)) + geom_point() + facet_grid(. ~ Year)
-
+ggplot(growth_inv, aes( Site, Involucres)) + geom_point(position="jitter") + facet_grid(. ~ Year)
 g.mod <- glm(Involucres ~ Site*Year, family = poisson, data=growth_inv)
 summary(g.mod)
-anova(g.mod)
+anova(g.mod, test="Chisq")
 
 #Hypothesis for spatiotemporal variation in plant growth: 
 
@@ -34,16 +33,21 @@ anova(g.mod)
 
 #Spatiotemporal variation in air temperature
 ggplot(growth, aes(Site, pg.at)) + geom_jitter(width=0.2, height=0.1) + facet_grid(. ~ Year)
+ggplot(growth, aes(pg.at, Diameter, color=Year, shape=Site)) + geom_jitter(width=0.02, height=0.01)
+#ggplot(growth, aes(pg.ppt, Diameter, color=Year, shape=Site)) + geom_jitter(width=0.01, height=0)
 
 #Regression of Diameter with air temp
-g.mod <- glm(Diameter ~ pg.at, data=growth)
+library(lme4)
+g.mod <- lmer(Diameter ~ pg.at + (1 | Site) + (1 | Year), data=growth)
+g.mod.null <- lmer(Diameter ~ 1 + (1 | Site) + (1 | Year), data=growth)
 summary(g.mod)
-anova(g.mod)
+anova(g.mod.null, g.mod)
 
 #Regression of Fecundity with air temp
+ggplot(growth_inv, aes(pg.at, Involucres, color=Year, shape=Site)) + geom_jitter(width=0.01, height=0)
 g.mod <- glm(Involucres ~ pg.at, data=growth_inv)
 summary(g.mod)
-anova(g.mod)
+anova(g.mod, test="Chisq")
 
 # Pricipal component with soil variables and regression of PCs with plant diameter ---------------------------------
 
