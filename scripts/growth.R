@@ -1,8 +1,11 @@
-#setwd("C:\\Users\\jaspkaur\\Google Drive\\data_analysis\\chorizanthe\\mar2018/")
+#setwd("C:\\Users\\jaspkaur\\Google Drive\\data_analysis\\chorizanthe\\chori")
+
+library(readxl)
+library(ggplot2)
+library(lme4)
 
 # import growth data##########
 
-library(readxl)
 growth <- read_excel("data/growth_germ.xlsx", sheet = 1)
 growth$Year = as.factor(growth$Year) #convert year values into factor 
 
@@ -10,8 +13,6 @@ growth$Year = as.factor(growth$Year) #convert year values into factor
 growth_inv = subset(growth, Year == 2016 | Year == 2017)
 
 # Determine the spatio-temporal variation in Diameter and Fecundity along with their potential predictors------------------------------------------------------------------------
-
-library(ggplot2)
 
 #Spatiotemporal variation in plant diameter
 ggplot(growth, aes(Site, Diameter)) + geom_point() + facet_grid(. ~ Year)
@@ -37,17 +38,17 @@ ggplot(growth, aes(pg.at, Diameter, color=Year, shape=Site)) + geom_jitter(width
 #ggplot(growth, aes(pg.ppt, Diameter, color=Year, shape=Site)) + geom_jitter(width=0.01, height=0)
 
 #Regression of Diameter with air temp
-library(lme4)
 g.mod <- lmer(Diameter ~ pg.at + (1 | Site) + (1 | Year), data=growth)
 g.mod.null <- lmer(Diameter ~ 1 + (1 | Site) + (1 | Year), data=growth)
 summary(g.mod)
 anova(g.mod.null, g.mod)
 
 #Regression of Fecundity with air temp
-ggplot(growth_inv, aes(pg.at, Involucres, color=Year, shape=Site)) + geom_jitter(width=0.01, height=0)
-g.mod <- glm(Involucres ~ pg.at, data=growth_inv)
+g.mod <- glmer(Involucres ~ pg.at + (1 | Site) + (1 | Year), family = poisson, data=growth_inv)
+g.mod.null <- glmer(Involucres ~ 1 + (1 | Site) + (1 | Year), family = poisson, data=growth_inv)
 summary(g.mod)
-anova(g.mod, test="Chisq")
+anova(g.mod.null, g.mod, test="Chisq")
+
 
 # Pricipal component with soil variables and regression of PCs with plant diameter ---------------------------------
 
