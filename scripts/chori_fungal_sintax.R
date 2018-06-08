@@ -21,31 +21,52 @@ source("scripts/make_phyloseq.R")
 
 d = subset_taxa(d, Kingdom == "d:Fungi")
 d
-decon.d = subset_samples(d, plot == "mon"| plot == "NC")
+decon.d = subset_samples(d, plot == "mon" |plot == "ger"| plot == "NC")
 decon.d
 
 ##decontaminate phyloseq object
 source("scripts/decontaminate_phyloseq.R")
 
 ###select populations
+d.fin
 
-d.fin2 = subset_samples(d.fin, Population == "EO12"| 
-                        Population == "EO14"| Population == "EO16")
+d.fin2 = subset_samples(d.fin, plot == "ger"| plot == "mon") ####remove NC
+d.fin2 = prune_taxa(taxa_sums(d.fin2) >= 1, d.fin2)
+d.fin2
+
+# Species accumulation curves ---------------------------------------------
+
+###species accumulation curves
+d_rf = merge_samples(d.fin2, "Population")
+otu_rf = data.frame(otu_table(d_rf))
+library(iNEXT)
+otu_rc = data.frame(t(otu_rf)) ####columns should be samples
+m <- c(1000, 2000, 5000, 10000, 20000, 30000, 50000)
+out = iNEXT(otu_rc, q=0, datatype="abundance", size=m, nboot = 100)
+g = ggiNEXT(out, type=1, se = FALSE, facet.var="none")
+
+g1 = g + scale_color_manual(values=c("wheat4", "violetred4", "turquoise3", "tomato2", "springgreen2",
+                                     "slateblue2", "navyblue", "magenta", "blue2", "black", "seagreen4",
+                                     "dodgerblue1", "orangered4", "yellow4", "slategray4", "olivedrab1","deeppink4", "aquamarine",
+                                     "hotpink", "yellow1", "tan2", "red3", "pink1"))
+g1
 
 # Alpha diversity ---------------------------------------------------------
-
-#plot_richness(d.fin, x= "Population", measures=c("Shannon", "Simpson") )
 
 temp = estimate_richness(d.fin2)
 temp = merge(met, temp, by = "row.names")
 
-ggplot(temp, aes(Population, Shannon)) + geom_point() + facet_grid(. ~ Year)
 ggplot(temp, aes(Population, Simpson)) + geom_point() + facet_grid(. ~ Year)
 
-a = summary(aov(Simpson ~ Population*Year, data = temp))
-a
-a = summary(aov(Shannon ~ Population*Year, data = temp))
-a
+alpha.kw = c()
+for(i in c(5, 8)){
+  column = names(temp[i])
+  k.demo = kruskal.test(Simpson ~ as.factor(temp[,i]), data = temp)$"p.value"
+  results = data.frame(otu = paste(column), pval = as.numeric(paste(k.demo)))
+  alpha.kw = rbind(alpha.kw, results)
+}
+
+alpha.kw$p.ad = p.adjust(alpha.kw$pval, method = "bonferroni")
 
 # Beta diversity with bray ------------------------------------------------
 

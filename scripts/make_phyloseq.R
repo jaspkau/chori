@@ -13,12 +13,15 @@ library(reshape2)
 row.names(tax) = tax$V1
 list = tax$V2
 tax2 = colsplit(list, pattern ="\\(|\\),", c("Kingdom", "Kingdom_conf", "Phylum", "Phylum_conf", "Class", "Class_conf", "Order", "Order_conf", "Family", "Family_conf", "Genus", "Genus_conf", "Species", "Species_conf"))
+
+source("scripts/correct_tax_dataframe.R")
+
 tax2$Species_conf = gsub("\\)", "", tax2$Species_conf)
 tax2$Species_conf = as.numeric(tax2$Species_conf)
 tax2[is.na(tax2)] <- 0
 row.names(tax2) = row.names(tax)
 
-source("scripts/tax_func.R") #90% conf
+source("scripts/tax_func.R") #80% conf
 level = c("Kingdom", "Phylum", "Class", "Order", "Family", "Genus", "Species")
 for (i in 1:7){ ###i 1 = kingdom, i 2 = phylum etc
   tax2 = tax_assign(tax2, paste(level[i], "_conf", sep = ""), level[i])
