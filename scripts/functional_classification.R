@@ -35,7 +35,7 @@ guil = merge(met, guild_agg2, by = "row.names")
 guil$plot = as.factor(guil$plot)
 guil = subset(guil, plot == "ger"| plot == "mon")
 
-guil.bd = guil[,43:96] ##select only numeric columns for permanova
+guil.bd = guil[,44:97] ##select only numeric columns for permanova
 rownames(guil.bd) = guil$code
 guil.bd = decostand(guil.bd, method = "hellinger")
 rowSums(guil.bd)
@@ -58,12 +58,12 @@ write.csv(sim.df.pop, file = "results/simper_fun_func.csv")
 
 ###clustering
 
-guil = guil[,c(5,43:96)]
-guil = group_by(guil, Population)
+guil = guil[,c(42,44:97)]
+guil = group_by(guil, pop.year)
 tally(guil)
 guil2 = data.frame(summarise_each(guil, funs(sum(., na.rm = TRUE))))
 
-rownames(guil2) = guil2$Population
+rownames(guil2) = guil2$pop.year
 guil2 = guil2[,-1]
 rel.abun = guil2/rowSums(guil2)
 write.csv(rel.abun, file = "results/fungal_guild_rel_abun.csv", sep = ",")

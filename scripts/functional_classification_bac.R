@@ -24,7 +24,7 @@ met$pop.year = gsub(" ", "", met$pop.year)
 guil = merge(met, guild, by = "row.names")
 #guil = subset(guil, Population == "EO12" | Population  == "EO14" | Population == "EO16")
 guil = subset(guil, plot == "mon" | plot == "ger")
-guil.bd = guil[,42:130] ##select only numeric columns for permanova
+guil.bd = guil[,43:131] ##select only numeric columns for permanova
 rownames(guil.bd) = guil$code
 guil.bd = decostand(guil.bd, method = "hellinger")
 rowSums(guil.bd)
@@ -46,12 +46,13 @@ sim.df.pop = data.frame(sim.sum$EO12_NPS2)
 write.csv(sim.df.pop, file = "simper_bac_func.csv")
 #weighted distance analysis
 
-guil2 = group_by(guil, Population)
-guil2 = guil2[, c(5, 42:130)]
+guil$int = paste(guil$Population,".",guil$replicate)
+guil2 = group_by(guil, int)
+guil2 = guil2[, c(132, 43:131)]
 tally(guil2)
 guil2 = data.frame(summarise_each(guil2, funs(sum(., na.rm = TRUE))))
 
-rownames(guil2) = guil2$Population
+rownames(guil2) = guil2$int
 guil2 = guil2[,-1]
 
 rel.abun = guil2/rowSums(guil2)

@@ -1,5 +1,4 @@
 #setwd("C:/Users/jaspkaur/Google Drive/data_analysis/chorizanthe/chori")
-setwd("C:/Users/jaspr/Google Drive/data_analysis/chorizanthe/chori")
 
 #source("https://bioconductor.org/biocLite.R")
 #biocLite("phyloseq")
@@ -9,6 +8,7 @@ library(vegan)
 library(devtools)
 #devtools::install_github("benjjneb/decontam")
 library(decontam)
+library(dplyr)
 
 # Make phyloseq object ----------------------------------------------------
 
@@ -64,14 +64,19 @@ g1
 # Alpha diversity ---------------------------------------------------------
 
 #plot_richness(d.fin, x= "Population", measures=c("Shannon", "Simpson") )
-
 temp = estimate_richness(d.fin2)
 temp = merge(met, temp, by = "row.names")
+temp = temp[,-1]
+row.names(temp) = temp[,1]
 
-ggplot(temp, aes(Population, Simpson)) + geom_point() + facet_grid(. ~ Year)
+bp <- ggplot(temp, aes(x=Population, y=Simpson)) + 
+  geom_boxplot(aes(fill= "slategray4")) + 
+  labs(x = paste("Site"), 
+       y = paste("Simpson diversity index (H)")) + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+bp
 
 alpha.kw = c()
-for(i in c(5, 8)){
+for(i in c(4, 7, 41)){
   column = names(temp[i])
   k.demo = kruskal.test(Simpson ~ as.factor(temp[,i]), data = temp)$"p.value"
   results = data.frame(otu = paste(column), pval = as.numeric(paste(k.demo)))
@@ -79,6 +84,11 @@ for(i in c(5, 8)){
 }
 
 alpha.kw$p.ad = p.adjust(alpha.kw$pval, method = "bonferroni")
+
+avg = temp %>%
+  group_by(Population) %>%
+  summarise(simp = mean(Simpson))
+avg
 
 # Beta diversity with bray ------------------------------------------------
 
@@ -99,7 +109,9 @@ a
 
 # Hierarchial clustering --------------------------------------------------
 
-d.popyear = merge_samples(d.fin2, "pop.year")
+sample_data(d.fin2)$int = paste(sample_data(d.fin2)$Population,".",sample_data(d.fin2)$replicate)
+sample_data(d.fin2)$int = gsub(" ","",sample_data(d.fin2)$int)
+d.popyear = merge_samples(d.fin2, "int")
 otu3 = data.frame(otu_table(d.popyear))
 otu3 = decostand(otu3, method = "hellinger")
 rel_otu_int = otu3

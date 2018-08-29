@@ -37,11 +37,11 @@ d.fin2
 # Species accumulation curves ---------------------------------------------
 
 ###species accumulation curves
-d_rf = merge_samples(d.fin2, "Population")
+d_rf = merge_samples(d.fin2, "pop.year")
 otu_rf = data.frame(otu_table(d_rf))
 library(iNEXT)
 otu_rc = data.frame(t(otu_rf)) ####columns should be samples
-m <- c(1000, 2000, 5000, 10000, 20000, 30000, 50000)
+m <- c(1000, 2000, 5000, 10000, 20000, 30000)
 out = iNEXT(otu_rc, q=0, datatype="abundance", size=m, nboot = 100)
 g = ggiNEXT(out, type=1, se = FALSE, facet.var="none")
 
@@ -55,11 +55,17 @@ g1
 
 temp = estimate_richness(d.fin2)
 temp = merge(met, temp, by = "row.names")
+temp = temp[,-1]
+row.names(temp) = temp[,1]
 
-ggplot(temp, aes(Population, Simpson)) + geom_point() + facet_grid(. ~ Year)
+bp <- ggplot(temp, aes(x=Population, y=Simpson)) + 
+  geom_boxplot(aes(fill= "slategray4")) + 
+  labs(x = paste("Site"), 
+       y = paste("Simpson diversity index (H)")) + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+bp
 
 alpha.kw = c()
-for(i in c(5, 8)){
+for(i in c(4, 7, 41)){
   column = names(temp[i])
   k.demo = kruskal.test(Simpson ~ as.factor(temp[,i]), data = temp)$"p.value"
   results = data.frame(otu = paste(column), pval = as.numeric(paste(k.demo)))
@@ -67,6 +73,11 @@ for(i in c(5, 8)){
 }
 
 alpha.kw$p.ad = p.adjust(alpha.kw$pval, method = "bonferroni")
+
+avg = temp %>%
+  group_by(pop.year) %>%
+  summarise(simp = mean(Simpson))
+avg
 
 # Beta diversity with bray ------------------------------------------------
 
