@@ -33,7 +33,7 @@ dist_w_guild = vegdist(guil.bd, method = "bray")
 
 ###PERMANOVA
 
-a = adonis(dist_w_guild ~ guil$Population*guil$Year, permutations = 999)
+a = adonis(dist_w_guild ~ guil$Population, permutations = 999)
 a
 
 ###ajust P-values

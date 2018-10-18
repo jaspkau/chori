@@ -86,7 +86,7 @@ p
 # Realtive abundance plots at Phylum level ------------------------------------------------
 
 d_f = tax_glom(d.fin2, taxrank = "Phylum")
-d_f = merge_samples(d_f, "pop.year")
+d_f = merge_samples(d_f, "Population")
 gen_f = data.frame(otu_table(d_f))
 gen_f = t(gen_f)
 gen_f = merge(gen_f, tax_table(d_f), by = "row.names")

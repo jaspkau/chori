@@ -76,7 +76,7 @@ bp <- ggplot(temp, aes(x=Population, y=Simpson)) +
 bp
 
 alpha.kw = c()
-for(i in c(4, 7, 41)){
+for(i in c(4)){
   column = names(temp[i])
   k.demo = kruskal.test(Simpson ~ as.factor(temp[,i]), data = temp)$"p.value"
   results = data.frame(otu = paste(column), pval = as.numeric(paste(k.demo)))
@@ -104,7 +104,7 @@ dist_w = vegdist(rel_otu_code, method = "bray")
 
 ###PERMANOVA
 
-a = adonis(dist_w ~ sample_data(d.ado)$Population*sample_data(d.ado)$Year, permutations = 999)
+a = adonis(dist_w ~ sample_data(d.ado)$Population, permutations = 999)
 a
 
 # Hierarchial clustering --------------------------------------------------

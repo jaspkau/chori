@@ -14,12 +14,12 @@ growth$Year = as.factor(growth$Year) #convert year values into factor
 
 #Spatiotemporal variation in plant diameter (Figure 2b)
 gavg <- growth %>% 
-  group_by(Site, Year) %>% 
+  group_by(Site) %>% 
   summarise(Diameter = mean(Diameter))
 gavg
 
 ggplot(growth, aes(Site, Diameter)) + geom_point() + 
-  facet_grid(. ~ Year) + geom_bar(data = gavg, stat = "identity", alpha = .3)
+   geom_bar(data = gavg, stat = "identity", alpha = .3)
 
 ####Regression of plant diameter with sites and years
 

@@ -15,7 +15,7 @@ otu <- read.delim(file = "data/otu_table_no_singletons_sintax_fungal.txt",
                   sep = "\t", header = T)
 tax = read.delim(file = "data/tax_fungal.sintax", sep = "\t", header = F)
 met <- as.data.frame(read_excel("data/met.xlsx", sheet = 1))
-
+met$replicate = as.factor(met$replicate)
 ##make phyloseq object
 source("scripts/make_phyloseq.R")
 
@@ -65,7 +65,7 @@ bp <- ggplot(temp, aes(x=Population, y=Simpson)) +
 bp
 
 alpha.kw = c()
-for(i in c(4, 7, 41)){
+for(i in c(4)){
   column = names(temp[i])
   k.demo = kruskal.test(Simpson ~ as.factor(temp[,i]), data = temp)$"p.value"
   results = data.frame(otu = paste(column), pval = as.numeric(paste(k.demo)))
@@ -93,12 +93,13 @@ dist_w = vegdist(rel_otu_code, method = "bray")
 
 ###PERMANOVA
 
-a = adonis(dist_w ~ sample_data(d.ado)$Population*sample_data(d.ado)$Year, permutations = 999)
+a = adonis(dist_w ~ sample_data(d.ado)$Population, permutations = 999)
 a
 
 # Hierarchial clustering --------------------------------------------------
-
-d.popyear = merge_samples(d.fin2, "pop.year")
+sample_data(d.fin2)$int = paste(sample_data(d.fin2)$Population, ".", sample_data(d.fin2)$replicate)
+sample_data(d.fin2)$int = gsub(" ", "", sample_data(d.fin2)$int)
+d.popyear = merge_samples(d.fin2, "int")
 otu3 = data.frame(otu_table(d.popyear))
 otu3 = decostand(otu3, method = "hellinger")
 rel_otu_int = otu3

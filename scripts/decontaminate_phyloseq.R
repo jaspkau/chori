@@ -22,8 +22,8 @@ d.fin
 
 ####scale envt data according to above sample selection
 met2 = data.frame(sample_data(d.fin))
-env_met = met2[,cbind(1,2,3,4,5,6,7,40,41)]
-env = met2[,8:39]
+env_met = met2[,cbind(1,2,3,4,5,6,7,8,41,42)]
+env = met2[,9:40]
 env = scale(env)
 met3 = merge(env_met, env, by = "row.names")
 row.names(met3) = met3$Row.names

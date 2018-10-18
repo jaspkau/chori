@@ -26,10 +26,12 @@ guild_agg2  = guild_agg2[,-1]
 guild_agg2 = t(guild_agg2)
 
 met <- as.data.frame(read_excel("data/met.xlsx", sheet = 1))
-row.names(met) = met$code
 met$Year = as.factor(met$Year)
+met$replicate = as.factor(met$replicate)
 met$pop.year = paste(met$Population, ".", gsub("20", "", met$Year))
 met$pop.year = gsub(" ", "", met$pop.year)
+met$int = interaction(met$Population, met$replicate)
+row.names(met) = met$code
 
 guil = merge(met, guild_agg2, by = "row.names")
 guil$plot = as.factor(guil$plot)
@@ -44,7 +46,7 @@ dist_w_guild = vegdist(guil.bd, method = "bray")
 
 ###PERMANOVA
 
-a = adonis(dist_w_guild ~ guil$Population*guil$Year, permutations = 999)
+a = adonis(dist_w_guild ~ guil$Population, permutations = 999)
 a
 
 ###ajust P-values
@@ -58,12 +60,12 @@ write.csv(sim.df.pop, file = "results/simper_fun_func.csv")
 
 ###clustering
 
-guil = guil[,c(42,44:97)]
-guil = group_by(guil, pop.year)
+guil = guil[,c(43,45:105)]
+guil = group_by(guil, int)
 tally(guil)
 guil2 = data.frame(summarise_each(guil, funs(sum(., na.rm = TRUE))))
 
-rownames(guil2) = guil2$pop.year
+rownames(guil2) = guil2$int
 guil2 = guil2[,-1]
 rel.abun = guil2/rowSums(guil2)
 write.csv(rel.abun, file = "results/fungal_guild_rel_abun.csv", sep = ",")
@@ -81,11 +83,12 @@ nodePar <- list(lab.cex = 1, pch = c(NA, 19), cex = 0.7, col = "blue")
 p = plot(dhc,  xlab = "Weighted Bray-Curtis distance", nodePar = nodePar, horiz = TRUE)
 p
 
+who = names(sort(colMeans(guil3), decreasing = TRUE)[1:30])
+guil.hm = guil3[,(names(guil3) %in% who)]
+
 colfunc <- colorRampPalette(c("grey", "black"))
 library(gplots)
-g1 = heatmap.2(as.matrix(guil3), 
+g1 = heatmap.2(as.matrix(guil.hm), 
                Rowv = as.dendrogram(h), margins = c(10, 10), col = colfunc(100), 
                xlab = "Weighted Bray Curtis dissimilarity distances",
-               trace = "none",
-               cellnote = guil3, notecex=0.7,
-               notecol="white")
+               trace = "none")
