@@ -23,9 +23,13 @@ ggplot(growth, aes(Site, Diameter)) + geom_point() +
 
 ####Regression of plant diameter with sites and years
 
-g.mod <- lm(Diameter ~ Site + Year + Site*Year, data=growth)
+g.mod <- lm(Diameter ~ Site, data=growth)
+
+anova.tab <- anova(g.mod)
+anova.tab
+
 summary(g.mod)
-anova(g.mod)
+
 qqnorm(resid(g.mod))
 
 #Spatiotemporal variation in air temperature (Figure 2c)
