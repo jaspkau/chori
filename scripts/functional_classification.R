@@ -52,43 +52,37 @@ a
 ###ajust P-values
 p.adjust(a$aov.tab$`Pr(>F)`, method = "bonferroni")
 
-sim = simper(guil.bd, guil$Population)
-sim.sum = summary(sim)
-sim.df.pop = data.frame(sim.sum$EO12_NPS2)
-
-write.csv(sim.df.pop, file = "results/simper_fun_func.csv")
-
 ###clustering
 
-guil = guil[,c(43,45:105)]
-guil = group_by(guil, int)
+guil = guil[,c(5,44:105)]
+guil = group_by(guil, Population)
 tally(guil)
 guil2 = data.frame(summarise_each(guil, funs(sum(., na.rm = TRUE))))
 
-rownames(guil2) = guil2$int
+rownames(guil2) = guil2$Population
 guil2 = guil2[,-1]
 rel.abun = guil2/rowSums(guil2)
 write.csv(rel.abun, file = "results/fungal_guild_rel_abun.csv", sep = ",")
-guil3 = decostand(guil2, method = "hellinger")
-rel_otu_int = guil3
-rowSums(guil3)
-guil3 = round(guil3, 2)
 
-dist_w_guild.py = vegdist(guil3, method = "bray")
+who = names(sort(colMeans(rel.abun), decreasing = TRUE))[1:10]
+f = rel.abun[,names(rel.abun) %in% who]
+f$Other = 1-rowSums(f)
+who = c(who, "Other")
+dd = f
+dd$sl = row.names(dd)
+m = melt(dd, id.vars = c("sl"), measure.vars = who)
+library(RColorBrewer)
+state_col2 = scale_fill_manual(name = "State3", values=c(brewer.pal(n = 5, name = "Blues"),brewer.pal(n = 10, name = "Paired"), "azure3", "burlywood1", "cornflowerblue", "wheat4", "cyan4", "turquoise3", "gold1", "tan2", 
+                                                         "springgreen2", "slateblue2", "red3", "navyblue", 
+                                                         "magenta", "olivedrab1", "blue2", "black", "yellow1",
+                                                         "dodgerblue1", "orangered4", "yellow4", "deeppink4", 
+                                                         "slategray4", "seagreen4" , "aquamarine",
+                                                         "tomato2", brewer.pal(n = 11, name = "Spectral")))
 
-#weighted distance analysis
-h = hclust(dist_w_guild.py, method = "average")
-dhc <- as.dendrogram(h)
-nodePar <- list(lab.cex = 1, pch = c(NA, 19), cex = 0.7, col = "blue")
-p = plot(dhc,  xlab = "Weighted Bray-Curtis distance", nodePar = nodePar, horiz = TRUE)
-p
+library(scales)
 
-who = names(sort(colMeans(guil3), decreasing = TRUE)[1:30])
-guil.hm = guil3[,(names(guil3) %in% who)]
-
-colfunc <- colorRampPalette(c("grey", "black"))
-library(gplots)
-g1 = heatmap.2(as.matrix(guil.hm), 
-               Rowv = as.dendrogram(h), margins = c(10, 10), col = colfunc(100), 
-               xlab = "Weighted Bray Curtis dissimilarity distances",
-               trace = "none")
+p.phy = ggplot(m, aes(sl, fill = variable)) + geom_bar(aes(weight = value)) +
+  theme_bw(base_size = 20) + state_col2 + xlab("Sample") + ylab("Relative Abundance") + theme(axis.text.x = element_text(angle = 45, hjust = 0.9, size = 10, color = "black")) +
+  theme(legend.text = element_text(face = "italic", size = 10)) + guides(fill = guide_legend(ncol = 1, reverse=T, keywidth = 0.8, keyheight = 0.8))+ scale_y_continuous(labels = percent_format())
+p.phy$data$variable = factor(p.phy$data$variable, ordered = TRUE, levels = rev(who))
+p.phy

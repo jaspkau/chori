@@ -52,7 +52,7 @@ otu_rf = data.frame(otu_table(d_rf))
 library(iNEXT)
 otu_rc = data.frame(t(otu_rf)) ####columns should be samples
 m <- c(1000, 2000, 5000, 10000, 20000, 30000, 100000)
-out = iNEXT(otu_rc, q=0, datatype="abundance", size=m, nboot = 100)
+out = iNEXT(otu_rc, q=1, datatype="abundance", size=m, nboot = 1)
 g = ggiNEXT(out, type=1, se = FALSE, facet.var="none")
 
 g1 = g + scale_color_manual(values=c("wheat4", "violetred4", "turquoise3", "tomato2", "springgreen2",
@@ -72,7 +72,7 @@ row.names(temp) = temp[,1]
 bp <- ggplot(temp, aes(x=Population, y=Simpson)) + 
   geom_boxplot(aes(fill= "slategray4")) + 
   labs(x = paste("Site"), 
-       y = paste("Simpson diversity index (H)")) + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+       y = paste("Simpson diversity index (D)")) + theme(axis.text.x = element_text(angle = 45, hjust = 1))
 bp
 
 alpha.kw = c()
@@ -84,6 +84,7 @@ for(i in c(4)){
 }
 
 alpha.kw$p.ad = p.adjust(alpha.kw$pval, method = "bonferroni")
+alpha.kw
 
 avg = temp %>%
   group_by(Population) %>%
@@ -104,12 +105,12 @@ dist_w = vegdist(rel_otu_code, method = "bray")
 
 ###PERMANOVA
 
-a = adonis(dist_w ~ sample_data(d.ado)$Population, permutations = 999)
+a = adonis2(dist_w ~ sample_data(d.ado)$Population, permutations = 999)
 a
 
 # Hierarchial clustering --------------------------------------------------
 
-sample_data(d.fin2)$int = paste(sample_data(d.fin2)$Population,".",sample_data(d.fin2)$replicate)
+sample_data(d.fin2)$int = paste(sample_data(d.fin2)$Population, ".", sample_data(d.fin2)$replicate)
 sample_data(d.fin2)$int = gsub(" ","",sample_data(d.fin2)$int)
 d.popyear = merge_samples(d.fin2, "int")
 otu3 = data.frame(otu_table(d.popyear))

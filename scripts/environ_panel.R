@@ -13,7 +13,7 @@ library(forecast)
 library(lmtest)
 library(ggpubr)
 
-data <- read_excel("data/PG_env.xlsx",
+data <- read_excel("data/PCA_env.xlsx",
                    sheet = 1)
 
 data$date <- as.POSIXct(data$date, format= "%y-%m-%d %H:%M",
@@ -21,7 +21,7 @@ data$date <- as.POSIXct(data$date, format= "%y-%m-%d %H:%M",
 
 data$year = year(data$date)
 data$month = month(data$date)
-data.avg = group_by(data, Site, year, month)
+data.avg = group_by(data, year, month)
 tally(data.avg)
 pg_env_avg = data.frame(summarise_each(data.avg, funs(mean(., na.rm = TRUE))))   # calculate the annual mean of airt
 pg_env_avg$int = paste(pg_env_avg$month,".",pg_env_avg$year)

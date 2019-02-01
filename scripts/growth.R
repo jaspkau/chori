@@ -5,25 +5,49 @@ library(ggplot2)
 library(lme4)
 library(dplyr)
 
+#########Imprt data for Population size figure (Fig. 2a)
+
+growth <- read_excel("data/growth_germ.xlsx", sheet = 7)
+growth$Year = as.factor(growth$Year) #convert year values into factor 
+
+growth$pop.year = paste(growth$Site,".", growth$Year)
+growth$pop.year = gsub(" ", "", growth$pop.year)
+
+ggplot(growth, aes(pop.year, pop_size)) + geom_bar(stat = "identity") +
+  theme_classic() + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 0.9, 
+                                   size = 9, color = "black")) +
+  ylab("Population size") +
+  xlab("Site")
+
 # import growth data##########
 
 growth <- read_excel("data/growth_germ.xlsx", sheet = 1)
 growth$Year = as.factor(growth$Year) #convert year values into factor 
 
-# Determine the spatio-temporal variation in Diameter------------------------------------------------------------------------
+# Determine the spatio-temporal variation in Width------------------------------------------------------------------------
 
-#Spatiotemporal variation in plant diameter (Figure 2b)
+#Spatiotemporal variation in plant Width (Figure 2b)
 gavg <- growth %>% 
   group_by(Site) %>% 
-  summarise(Diameter = mean(Diameter))
+  summarise(Width = mean(Width))
 gavg
 
-ggplot(growth, aes(Site, Diameter)) + geom_point() + 
-   geom_bar(data = gavg, stat = "identity", alpha = .3)
+ggplot(growth, aes(Site, Width)) + geom_point() + 
+   geom_bar(data = gavg, stat = "identity", alpha = .3) + 
+  facet_grid(.~ Year) +
+  geom_jitter(width = 0.2, height = 0) +
+  theme_classic() +
+  theme(axis.text.x = element_text(face="plain", color="black", 
+                                   size=9, angle=0, vjust = 0),
+        axis.text.y = element_text(face="plain", color="black", 
+                                   size=9, angle=0)) +
+  ylab("Plant Width (cm)") +
+  xlab("Site")
 
-####Regression of plant diameter with sites and years
+####Regression of plant Width with sites and years
 
-g.mod <- lm(Diameter ~ Site, data=growth)
+g.mod <- lm(Width ~ Site, data=growth)
 
 anova.tab <- anova(g.mod)
 anova.tab
@@ -31,26 +55,3 @@ anova.tab
 summary(g.mod)
 
 qqnorm(resid(g.mod))
-
-#Spatiotemporal variation in air temperature (Figure 2c)
-
-growth$pop.year = paste(growth$Site,".", growth$Year)
-growth2 = subset(growth, pop.year != "EO16 . 2018")
-
-gavg2 <- growth %>% 
-  group_by(Site, Year) %>% 
-  summarise(Diameter = mean(Diameter), atemp = mean(pg.at))
-gavg2
-
-ggplot(gavg2, aes(atemp, Diameter, group = Site, color=Site, shape=Year)) + geom_point() + 
-  geom_line() +
-  geom_jitter(width=0.02, height=0.001)
-
-####Regression of plant diameter with air temperature
-
-g.mod <- lm(Diameter ~ pg.at, data=growth)
-summary(g.mod)
-anova(g.mod)
-qqnorm(resid(g.mod))
-
-

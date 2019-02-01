@@ -1,6 +1,6 @@
 # Realtive abundance plots at OTU level ------------------------------------------------
 
-d_f = merge_samples(d.fin2, "pop.year")
+d_f = merge_samples(d.fin2, "aspect")
 gen_f = data.frame(otu_table(d_f))
 gen_f = t(gen_f)
 gen_f = merge(gen_f, tax_table(d_f), by = "row.names")
@@ -89,11 +89,13 @@ d_f = tax_glom(d.fin2, taxrank = "Phylum")
 d_f = merge_samples(d_f, "Population")
 gen_f = data.frame(otu_table(d_f))
 gen_f = t(gen_f)
-gen_f = merge(gen_f, tax_table(d_f), by = "row.names")
+tax.df <- as(tax_table(d_f),"matrix")
+tax.df <- as.data.frame(tax.df)
+gen_f = merge(gen_f, tax.df, by = "row.names")
 gen_f$rank = as.character(gen_f$Phylum)
 #gen_f$rank = paste(as.character(gen_f$Row.names), "_", gen_f$Family)
 list = as.character(gen_f$rank)
-list = paste(list, "_", rep(1:length(list)), sep = "")
+#list = paste(list, "_", rep(1:length(list)), sep = "")
 gen_f = gen_f[,-1]
 drops <- c("Kingdom", "Phylum", "Class", "Order", "Family", "Genus", "Species", "rank")
 gen_f = gen_f[ , !(names(gen_f) %in% drops)]
