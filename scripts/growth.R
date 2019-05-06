@@ -1,24 +1,10 @@
 #setwd("C:\\Users\\jaspkaur\\Google Drive\\data_analysis\\chorizanthe\\chori")
+#setwd("C:\\Users\\jas\\Google Drive\\data_analysis\\chorizanthe\\chori")
 
 library(readxl)
 library(ggplot2)
 library(lme4)
 library(dplyr)
-
-#########Imprt data for Population size figure (Fig. 2a)
-
-growth <- read_excel("data/growth_germ.xlsx", sheet = 7)
-growth$Year = as.factor(growth$Year) #convert year values into factor 
-
-growth$pop.year = paste(growth$Site,".", growth$Year)
-growth$pop.year = gsub(" ", "", growth$pop.year)
-
-ggplot(growth, aes(pop.year, pop_size)) + geom_bar(stat = "identity") +
-  theme_classic() + 
-  theme(axis.text.x = element_text(angle = 45, hjust = 0.9, 
-                                   size = 9, color = "black")) +
-  ylab("Population size") +
-  xlab("Site")
 
 # import growth data##########
 
@@ -33,11 +19,14 @@ gavg <- growth %>%
   summarise(Width = mean(Width))
 gavg
 
-ggplot(growth, aes(Site, Width)) + geom_point() + 
+###plot data (Figure 2)
+
+width = ggplot(growth, aes(Site, Width)) + 
    geom_bar(data = gavg, stat = "identity", alpha = .3) + 
   facet_grid(.~ Year) +
-  geom_jitter(width = 0.2, height = 0) +
+  geom_jitter(width = 0.2, height = 0, size = 1) +
   theme_classic() +
+  ggtitle("Figure 2") +
   theme(axis.text.x = element_text(face="plain", color="black", 
                                    size=9, angle=0, vjust = 0),
         axis.text.y = element_text(face="plain", color="black", 
@@ -45,7 +34,10 @@ ggplot(growth, aes(Site, Width)) + geom_point() +
   ylab("Plant Width (cm)") +
   xlab("Site")
 
-####Regression of plant Width with sites and years
+ggsave(width, file="results/width.pdf", 
+       width = 6, height = 4, units = "in")
+
+####Linear regression of plant Width with sites as predictor
 
 g.mod <- lm(Width ~ Site, data=growth)
 

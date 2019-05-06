@@ -46,7 +46,7 @@ d.fin2
 
 # Species accumulation curves ---------------------------------------------
 
-###species accumulation curves
+###species accumulation curves (Fig. S1a)
 d_rf = merge_samples(d.fin2, "Population")
 otu_rf = data.frame(otu_table(d_rf))
 library(iNEXT)
@@ -61,6 +61,13 @@ g1 = g + scale_color_manual(values=c("wheat4", "violetred4", "turquoise3", "toma
                                      "hotpink", "yellow1", "tan2", "red3", "pink1"))
 g1
 
+####Relative abundance plots ---------------------------------------------
+
+source("scripts/relative_abundance_plots.R")
+
+###relative abundances at phylum level (Fig. S1b)
+p.phy
+
 # Alpha diversity ---------------------------------------------------------
 
 #plot_richness(d.fin, x= "Population", measures=c("Shannon", "Simpson") )
@@ -69,8 +76,11 @@ temp = merge(met, temp, by = "row.names")
 temp = temp[,-1]
 row.names(temp) = temp[,1]
 
+####PLOT Fig. S1c
+
 bp <- ggplot(temp, aes(x=Population, y=Simpson)) + 
   geom_boxplot(aes(fill= "slategray4")) + 
+  theme_classic() +
   labs(x = paste("Site"), 
        y = paste("Simpson diversity index (D)")) + theme(axis.text.x = element_text(angle = 45, hjust = 1))
 bp
@@ -129,18 +139,10 @@ d4 = merge_phyloseq(tax2, otu_table(as.matrix(otu3_tab),
 h = hclust(dist_w_int, method = "average")
 dhc <- as.dendrogram(h)
 nodePar <- list(lab.cex = 1, pch = c(NA, 19), cex = 0.7, col = "blue")
+
+###Plot Figure 7b
+
 p = plot(dhc,  xlab = "Weighted Bray-Curtis distance", nodePar = nodePar, horiz = TRUE)
 p
 
-####Relative abundance plots ---------------------------------------------
 
-source("scripts/relative_abundance_plots.R")
-
-###relative abundances at OTU level
-p.otus
-
-###relative abundances at phylum level
-p.phy
-
-###relative abundances at family level
-p.fam

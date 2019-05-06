@@ -54,10 +54,12 @@ gavg
 ####### prepare data for plotting---------------------------------------------------
 
 #show seed germination % variability and averages for micorohabitat and 
-#after-ripening interctaion
+#after-ripening interaction
 
 gavg = cSplit(gavg, "int", ".")
 gavg = plyr::rename(gavg, c("int_1"= "trt", "int_2"= "east"))
+gavg$east = gsub("TRUE", "Easterly", gavg$east)
+gavg$east = gsub("FALSE", "Westerly", gavg$east)
 
 ###calculate germination % for each seed packet 
 
@@ -71,29 +73,35 @@ gavg2
 gavg2 = cSplit(gavg2, "sp", ".")
 gavg2 = plyr::rename(gavg2, c("sp_1"= "Site", "sp_2"= "Year", "sp_3"= "trt", "sp_4"= "block"))
 
-####plot data
+####plot data (Fig. 3)
 
-g1 = ggplot(gavg2, aes(trt, Germ)) + geom_point() + 
+g.ar.germ = ggplot(gavg2, aes(trt, Germ)) +
   geom_bar(data = gavg, stat = "identity", alpha = .4) + facet_grid(.~ east) +
   scale_y_continuous(limits = c(0, 23)) + 
-  geom_jitter(width = 0.2, height = 0.8) +
+  geom_jitter(width = 0.2, height = 0.4) +
   theme_classic() +
-  theme(axis.text.x = element_text(face="plain", color="black", 
+  ggtitle("Figure 3") + 
+  theme(axis.text.x = element_text(face="plain",
+                                   color="black", 
                                    size=9, angle=30, vjust = 0.6),
-        axis.text.y = element_text(face="plain", color="black", 
+        axis.text.y = element_text(face="plain",
+                                   color="black", 
                                    size=9, angle=0)) +
   ylab("Germination (%)") + 
   scale_x_discrete("After-ripening",
                    labels=c("22°C, 45% RH","22°C, 17% RH","Soil",
                             "22°C, 45% RH","22°C, 17% RH","Soil"))
 
-g1
+g.ar.germ
+
+ggsave(g.ar.germ, file="results/AR_germ.pdf", 
+       width = 6, height = 5, units = "in")
 
 ####### Run mixed effect model -----------------------------------------------------------------------
 
-#cl = makeCluster(35) ###for running parallel jobs
+cl = makeCluster(35) ###for running parallel jobs
 
-gm1 <- afex::mixed(Germ ~ trt*east + (1 | Site/block), family = binomial, nAGQ = 1L, 
+gm1 <- afex::mixed(Germ ~ trt*east + (1 | Site:block), family = binomial, nAGQ = 1L, 
                    control = glmerControl(optimizer="bobyqa",
                                           boundary.tol = 1e-2,
                                           check.conv.singular = .makeCC(action="ignore",tol=1e-2), tolPwrss=1e-2),
@@ -141,38 +149,37 @@ gavg.wid
 #show plant Width variability and averages for micorohabitat and 
 #after-ripening interaction
 
+germ.sto.wid$east = gsub("TRUE", "Easterly", germ.sto.wid$east)
+germ.sto.wid$east = gsub("FALSE", "Westerly", germ.sto.wid$east)
+
 gavg.wid = cSplit(gavg.wid, "int", ".")
 gavg.wid = plyr::rename(gavg.wid, c("int_1"= "trt", "int_2"= "east"))
+gavg.wid$east = gsub("TRUE", "Easterly", gavg.wid$east)
+gavg.wid$east = gsub("FALSE", "Westerly", gavg.wid$east)
 
-####### data plotting---------------------------------------------------
+####### data plotting (Fig. 4)---------------------------------------------------
 
-g2 = ggplot(germ.sto.wid, aes(trt, Width)) + geom_point() + 
+g.ar.wid = ggplot(germ.sto.wid, aes(trt, Width)) +  
   geom_bar(data = gavg.wid, stat = "identity", alpha = .4) + facet_grid(.~ east) +
   scale_y_continuous(limits = c(0, 25)) + 
-  geom_jitter(width = 0.2, height = 0.7) +
+  geom_jitter(width = 0.1, height = 0.1) +
   theme_classic() +
-  theme(axis.text.x = element_text(face="plain", color="black", 
+  ggtitle("Figure 4") + 
+  theme(axis.text.x = element_text(face="plain", color="black",
                                    size=9, angle=30, vjust = 0.6),
-        axis.text.y = element_text(face="plain", color="black", 
+        axis.text.y = element_text(face="plain", color="black",
                                    size=9, angle=0)) +
   ylab("Plant Width (cm)") + 
   scale_x_discrete("After-ripening",
                    labels=c("22°C, 45% RH","22°C, 17% RH","Soil",
                             "22°C, 45% RH","22°C, 17% RH","Soil"))
-g2
+g.ar.wid
 
-####### Run mixed effect model -----------------------------------------------------------------------
+ggsave(g.ar.wid, file="results/AR_wid.pdf", 
+       width = 5, height = 4, units = "in")
 
-gm1 <- afex::mixed(Width ~ trt*east + (1 | Site/block), method = "KR", data = germ.sto.wid)
-
-anova.tab <- anova(gm1)
-anova.tab
-
-coef.tab <- summary(gm1)$coefficients
-coef.tab
-
-###############Microenvironment data--------------------------------------------
-# import micorenvironment germination data----------------------------------
+###############Microenvironment experiment data--------------------------------------------
+#import data-
 
 #Predictors: microhabitat (easterly vs. westerly), 2 light, and 2 soil moisture treatment
 #Response: seed germination and plant fitness
@@ -229,6 +236,8 @@ gavg
 gavg = cSplit(gavg, "int", ".")
 gavg = plyr::rename(gavg, c("int_1"= "Site", "int_2"= "shade", "int_3" = "water"))
 gavg$int = interaction(gavg$shade, gavg$water)
+gavg$Site = gsub("EO12g", "Easterly", gavg$Site)
+gavg$Site = gsub("EO14g", "Westerly", gavg$Site)
 
 ###calculate germination % for each seed packet 
 
@@ -243,26 +252,34 @@ gavg2 = cSplit(gavg2, "sp", ".")
 gavg2 = plyr::rename(gavg2, c("sp_1"= "Site", "sp_2"= "Year", "sp_3"= "block", "sp_4"= "replicate",
                               "sp_5"= "shade", "sp_6"= "water"))
 gavg2$int = interaction(gavg2$shade, gavg2$water)
+gavg2$Site = gsub("EO12g", "Easterly", gavg2$Site)
+gavg2$Site = gsub("EO14g", "Westerly", gavg2$Site)
 
-g1 = ggplot(gavg2, aes(int, Germ)) + geom_point() + 
+####plot data (Figure 5)
+
+g.env.germ = ggplot(gavg2, aes(int, Germ)) + 
   geom_bar(data = gavg, stat = "identity", alpha = .4) + 
-  facet_grid(.~ Site, labeller = labeller(fac_lab)) +
+  facet_grid(.~ Site) +
   scale_y_continuous(limits = c(0, 25)) + 
-  geom_jitter(width = 0.2, height = 0.5) +
+  geom_jitter(width = 0.2, height = 0.4) +
   theme_classic() +
-  theme(axis.text.x = element_text(face="plain", color="black", 
+  ggtitle("Figure 5") + 
+  theme(axis.text.x = element_text(face="plain", color="black",
                                    size=9, angle=0),
-        axis.text.y = element_text(face="plain", color="black", 
+        axis.text.y = element_text(face="plain", color="black",
                                    size=9, angle=0)) +
   ylab("Germination (%)") + 
   scale_x_discrete("Light and soil moisture interaction",
                    labels=c("AL:AM","ML:AM","AL:MM","ML:MM","AL:AM","ML:AM","AL:MM","ML:MM"))
 
-g1
+g.env.germ
+
+ggsave(g.env.germ, file="results/env_germ.pdf", 
+       width = 6, height = 4, units = "in")
 
 ####### Run mixed effect model -----------------------------------------------------------------------
 
-gm1 <- afex::mixed(Germ ~ shade*water*Site + (1 | block/replicate), family = binomial, nAGQ = 1L, 
+gm1 <- afex::mixed(Germ ~ shade*water*Site + (1 | block:replicate), family = binomial, nAGQ = 1L, 
                    control = glmerControl(optimizer="bobyqa",
                                           boundary.tol = 1e-2,
                                           check.conv.singular = .makeCC(action="ignore",tol=1e-2), tolPwrss=1e-2),
@@ -308,28 +325,22 @@ gavg.wid2 <- germ.env.wid %>%
 gavg.wid2
 
 
-####### data plotting---------------------------------------------------
+####### data plotting (Fig. 6) ---------------------------------------------------
 
-g2 = ggplot(germ.env.wid, aes(int, Width)) + geom_point() + 
+g.env.wid = ggplot(germ.env.wid, aes(int, Width)) +  
    geom_bar(data = gavg.wid2, stat = "identity", alpha = .3) +
-  geom_jitter(width = 0.1, height = 0.4) + 
+  geom_jitter(width = 0.1, height = 0.1) + 
   theme_classic() +
-  theme(axis.text.x = element_text(face="plain", color="black", 
+  ggtitle("Figure 6") + 
+  theme(axis.text.x = element_text(face="plain", color="black",
                                    size=9, angle=0),
-        axis.text.y = element_text(face="plain", color="black", 
+        axis.text.y = element_text(face="plain", color="black",
                                    size=9, angle=0)) +
   ylab(" Plant Width (cm)") +  
   scale_x_discrete("Light and soil moisture interaction",
                    labels=c("AL:AM","ML:AM","AL:MM","ML:MM"))
 
-g2
+g.env.wid
 
-####### Run mixed effect model -----------------------------------------------------------------------
-
-gm1 <- afex::mixed(Width ~ shade*water + (1 | block/replicate), method = "KR", data = germ.env.wid)
-
-anova.tab <- anova(gm1)
-anova.tab
-
-coef.tab <- summary(gm1)$coefficients
-coef.tab
+ggsave(g.env.wid, file="results/env_wid.pdf", 
+       width = 5, height = 4, units = "in")

@@ -45,11 +45,20 @@ m <- c(1000, 2000, 5000, 10000, 20000, 30000)
 out = iNEXT(otu_rc, q=0, datatype="abundance", size=m, nboot = 100)
 g = ggiNEXT(out, type=1, se = FALSE, facet.var="none")
 
+###plot Figure S2a
+
 g1 = g + scale_color_manual(values=c("wheat4", "violetred4", "turquoise3", "tomato2", "springgreen2",
                                      "slateblue2", "navyblue", "magenta", "blue2", "black", "seagreen4",
                                      "dodgerblue1", "orangered4", "yellow4", "slategray4", "olivedrab1","deeppink4", "aquamarine",
                                      "hotpink", "yellow1", "tan2", "red3", "pink1"))
 g1
+
+####Relative abundance plots ---------------------------------------------
+
+source("scripts/relative_abundance_plots.R")
+
+###relative abundances at phylum level (Fig. S2b)
+p.phy
 
 # Alpha diversity ---------------------------------------------------------
 
@@ -58,8 +67,11 @@ temp = merge(met, temp, by = "row.names")
 temp = temp[,-1]
 row.names(temp) = temp[,1]
 
+####plot Fig. S2c
+
 bp <- ggplot(temp, aes(x=Population, y=Simpson)) + 
   geom_boxplot(aes(fill= "slategray4")) + 
+  theme_classic() +
   labs(x = paste("Site"), 
        y = paste("Simpson diversity index (H)")) + theme(axis.text.x = element_text(angle = 45, hjust = 1))
 bp
@@ -116,19 +128,8 @@ d4 = merge_phyloseq(tax2, otu_table(as.matrix(otu3_tab),
 h = hclust(dist_w_int, method = "average")
 dhc <- as.dendrogram(h)
 nodePar <- list(lab.cex = 1, pch = c(NA, 19), cex = 0.7, col = "blue")
+
+###plot Figure 7c
 p = plot(dhc,  xlab = "Weighted Bray-Curtis distance", nodePar = nodePar, horiz = TRUE)
 p
-
-####Relative abundance plots ---------------------------------------------
-
-source("scripts/relative_abundance_plots.R")
-
-###relative abundances at OTU level
-p.otus
-
-###relative abundances at phylum level
-p.phy
-
-###relative abundances at family level
-p.fam
 

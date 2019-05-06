@@ -1,4 +1,4 @@
-setwd("C:/Users/jaspkaur/Google Drive/data_analysis/chorizanthe/chori")
+setwd("C:/Users/jas/Google Drive/data_analysis/chorizanthe/chori")
 
 library(readxl)
 library(vegan)
