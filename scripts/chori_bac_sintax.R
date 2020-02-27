@@ -16,6 +16,7 @@ otu <- read.delim(file = "data/otu_table_no_singletons_sintax_bac.txt",
                   sep = "\t", header = T)
 tax = read.delim(file = "data/tax_bac.sintax", sep = "\t", header = F)
 met <- as.data.frame(read_excel("data/met.xlsx", sheet = 2))
+met$aspect = ifelse(met$Population %in% c("EO12", "EO12g", "NPS2", "EO16"), "Easterly", "Westerly")
 
 source("scripts/make_phyloseq.R")
 
@@ -47,18 +48,18 @@ d.fin2
 # Species accumulation curves ---------------------------------------------
 
 ###species accumulation curves (Fig. S1a)
-d_rf = merge_samples(d.fin2, "Population")
+d_rf = merge_samples(d.fin2, "aspect")
 otu_rf = data.frame(otu_table(d_rf))
 library(iNEXT)
 otu_rc = data.frame(t(otu_rf)) ####columns should be samples
-m <- c(1000, 2000, 5000, 10000, 20000, 30000, 100000)
+m <- c(1000, 2000, 5000, 10000, 20000, 30000, 100000, 350000)
 out = iNEXT(otu_rc, q=1, datatype="abundance", size=m, nboot = 1)
 g = ggiNEXT(out, type=1, se = FALSE, facet.var="none")
 
 g1 = g + scale_color_manual(values=c("wheat4", "violetred4", "turquoise3", "tomato2", "springgreen2",
                                      "slateblue2", "navyblue", "magenta", "blue2", "black", "seagreen4",
                                      "dodgerblue1", "orangered4", "yellow4", "slategray4", "olivedrab1","deeppink4", "aquamarine",
-                                     "hotpink", "yellow1", "tan2", "red3", "pink1"))
+                                     "hotpink", "yellow1", "tan2", "red3", "pink1")) + theme_classic()
 g1
 
 ####Relative abundance plots ---------------------------------------------
@@ -78,7 +79,7 @@ row.names(temp) = temp[,1]
 
 ####PLOT Fig. S1c
 
-bp <- ggplot(temp, aes(x=Population, y=Simpson)) + 
+bp <- ggplot(temp, aes(x=aspect, y=Simpson)) + 
   geom_boxplot(aes(fill= "slategray4")) + 
   theme_classic() +
   labs(x = paste("Site"), 
@@ -86,7 +87,7 @@ bp <- ggplot(temp, aes(x=Population, y=Simpson)) +
 bp
 
 alpha.kw = c()
-for(i in c(4)){
+for(i in c(41)){
   column = names(temp[i])
   k.demo = kruskal.test(Simpson ~ as.factor(temp[,i]), data = temp)$"p.value"
   results = data.frame(otu = paste(column), pval = as.numeric(paste(k.demo)))
@@ -97,7 +98,7 @@ alpha.kw$p.ad = p.adjust(alpha.kw$pval, method = "bonferroni")
 alpha.kw
 
 avg = temp %>%
-  group_by(Population) %>%
+  group_by(aspect) %>%
   summarise(simp = mean(Simpson))
 avg
 
@@ -115,7 +116,7 @@ dist_w = vegdist(rel_otu_code, method = "bray")
 
 ###PERMANOVA
 
-a = adonis2(dist_w ~ sample_data(d.ado)$Population, permutations = 999)
+a = adonis2(dist_w ~ sample_data(d.ado)$aspect, permutations = 999)
 a
 
 # Hierarchial clustering --------------------------------------------------

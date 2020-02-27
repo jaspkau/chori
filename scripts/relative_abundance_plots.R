@@ -2,7 +2,7 @@
 # Realtive abundance plots at Phylum level ------------------------------------------------
 
 d_f = tax_glom(d.fin2, taxrank = "Phylum")
-d_f = merge_samples(d_f, "Population")
+d_f = merge_samples(d_f, "aspect")
 gen_f = data.frame(otu_table(d_f))
 gen_f = t(gen_f)
 tax.df <- as(tax_table(d_f),"matrix")

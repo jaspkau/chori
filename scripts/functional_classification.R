@@ -32,12 +32,13 @@ met$pop.year = paste(met$Population, ".", gsub("20", "", met$Year))
 met$pop.year = gsub(" ", "", met$pop.year)
 met$int = interaction(met$Population, met$replicate)
 row.names(met) = met$code
+met$aspect = ifelse(met$Population %in% c("EO12", "EO12g", "NPS2", "EO16"), "Easterly", "Westerly")
 
 guil = merge(met, guild_agg2, by = "row.names")
 guil$plot = as.factor(guil$plot)
 guil = subset(guil, plot == "ger"| plot == "mon")
 
-guil.bd = guil[,44:97] ##select only numeric columns for permanova
+guil.bd = guil[,45:106] ##select only numeric columns for permanova
 rownames(guil.bd) = guil$code
 guil.bd = decostand(guil.bd, method = "hellinger")
 rowSums(guil.bd)
@@ -46,7 +47,7 @@ dist_w_guild = vegdist(guil.bd, method = "bray")
 
 ###PERMANOVA
 
-a = adonis(dist_w_guild ~ guil$Population, permutations = 999)
+a = adonis(dist_w_guild ~ guil$aspect, permutations = 999)
 a
 
 ###ajust P-values
@@ -54,7 +55,7 @@ p.adjust(a$aov.tab$`Pr(>F)`, method = "bonferroni")
 
 ###clustering
 
-guil = guil[,c(5,44:105)]
+guil = guil[,c(5,45:106)]
 guil = group_by(guil, Population)
 tally(guil)
 guil2 = data.frame(summarise_each(guil, funs(sum(., na.rm = TRUE))))

@@ -25,8 +25,8 @@ library(gdata)
 data <- read.xls("data/chor_env_mon_germ_analysis_file.xlsx",
                  sheet = 1, verbose = TRUE, na.strings="N/A", perl="C:/Perl64/bin/perL")
 
-data$date <- as.POSIXct(data$date, format= "%Y-%m-%d %H:%M",
-                        tz = "GMT")
+data$date <- as.POSIXct(data$date, format= "%m/%d/%Y",
+                        tz="America/Los_Angeles")
 
 data$year = year(data$date)
 data$month = month(data$date)
@@ -43,9 +43,11 @@ tally(data)
 data = as.data.frame(data)
 m_raw = melt(data, id = c("year", "month", "date"))
 
-m_raw_atemp = subset(m_raw, variable == "EO12.atemp" | 
-                       variable == "EO14.atemp" | 
-                       variable == "EO16.atemp")
+m_raw_atemp = subset(m_raw, variable == "EO12.at" | 
+                       variable == "EO14.at" | 
+                       variable == "EO16.at"|
+                       variable == "NPS1.at"|
+                       variable == "NPS2.at")
 
 m_raw_atemp$value = as.numeric(m_raw_atemp$value)
 
@@ -58,3 +60,4 @@ p <- ggplot(data=m_raw_atemp, aes(date, value, group=variable, colour=variable))
                                 "black", "blue", "green"))
 
 p = ggplotly(p)
+p

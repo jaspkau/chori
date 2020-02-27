@@ -12,9 +12,9 @@ growth$Year = as.factor(growth$Year) #convert year values into factor
 
 ##subset dataframe for fecundity data which is only avaibale for 2016 and 2017 study years
 growth_inv = subset(growth, Year == 2016 | Year == 2017)
-#correlation between plant diameter and branches
+#correlation between plant Width and branches
 
-keep = c("Diameter", "Branches", "Involucres")
+keep = c("Width", "Branches", "Involucres")
 df1 = growth[,keep]
 df1 = as.matrix(df1)
 r = rcorr(df1, type = c("spearman"))
@@ -38,7 +38,7 @@ flattenCorrMatrix <- function(cormat, pmat) {
 flattenCorrMatrix(r$r, r$P)
 
 qplot(Branches, 
-     Diameter, 
+     Width, 
       data = df1, 
       geom = c("point", "smooth"), 
       method = "lm", 
@@ -46,7 +46,7 @@ qplot(Branches,
       se = TRUE)
 
 qplot(Involucres, 
-      Diameter, 
+      Width, 
       data = df1, 
       geom = c("point", "smooth"), 
       method = "lm", 
@@ -61,13 +61,13 @@ require(corrplot)
 ##check the normality before deciding on correlation method
 #if normal, use pearson correlation otherwise use spearman or kendall
 
-shapiro.test(df1$Diameter)
+shapiro.test(df1$Width)
 shapiro.test(df1$Branches)
 
-ggscatter(df1, x = "Branches", y = "Diameter",
+ggscatter(df1, x = "Branches", y = "Width",
           add = "reg.line", conf.int = TRUE,
           cor.coef = TRUE, cor.method = "spearman")
 
-ggscatter(df1, x = "Involucres", y = "Diameter",
+ggscatter(df1, x = "Involucres", y = "Width",
           add = "reg.line", conf.int = TRUE,
           cor.coef = TRUE, cor.method = "spearman")

@@ -4,16 +4,16 @@ library(gdata)
 library(lubridate)#workwithdates
 library(dplyr)#datamanipulation(filter,summarize,mutate)
 library(TSclust)
-library(gdata)
+library(readxl)
 library(imputeTS)
 library(lsmeans)
 library(multcomp)
 
 #####Import environmnetal data time series
-data <- read.xls("data/PCA_env.xlsx",
-               sheet=2,verbose=TRUE,na.strings="N/A")
+data <- read_excel("data/PCA_env.xlsx",
+               sheet=1)
 
-data$date <- as.POSIXct(as.character(data$date),format="%Y-%m-%d",
+data$date <- as.POSIXct(data$date,format="%Y-%m-%d",
                       tz="America/Los_Angeles")
 
 data$year = year(data$date)
@@ -32,25 +32,50 @@ data$day2 = ifelse(data$day >24, "d", paste(data$day2))
 data.avg = group_by(data, Site, year, month, day2)
 tally(data.avg)
 pg_env_avg = data.frame(summarise_each(data.avg, funs(mean(., na.rm = TRUE))))   # calculate the annual mean of airt
-pg_env_avg$int = paste(pg_env_avg$Site,".",pg_env_avg$year,".",pg_env_avg$month)
-pg_env_avg$int = gsub(" ", "", pg_env_avg$int)
+pg_env_avg$year = as.factor(pg_env_avg$year)
+pg_env_avg$month = as.factor(pg_env_avg$month)
+pg_env_avg$east = pg_env_avg$Site=="EO12"|pg_env_avg$Site=="EO16"|pg_env_avg$Site=="NPS2"
 
-###select the varible you want to test
+####correlation between microclimatic variables
 
-keep = c("Site", "year", "month", "day2", "par")
-#pg_env_avg[is.na(pg_env_avg)] <- " "
-avg = pg_env_avg[ ,(names(pg_env_avg) %in% keep)]
-avg = na.omit(avg)
-avg$year = as.factor(avg$year)
-avg$month = as.factor(avg$month)
+x = cor.test(pg_env_avg$at, pg_env_avg$st)
+x
+x = cor.test(pg_env_avg$at, pg_env_avg$sm2)
+x
+x = cor.test(pg_env_avg$at, pg_env_avg$rh)
+x
+x = cor.test(pg_env_avg$at, pg_env_avg$par)
+x
+x = cor.test(pg_env_avg$at, pg_env_avg$rf)
+x
 
 ###Regression model to compare environmnetal variables across space and time
 
-model = lmerTest::lmer(as.numeric(par) ~ Site*year + (1|month/day2), data = avg)
+model = lmerTest::lmer(as.numeric(at) ~ east + (1|year/month/day2), data = pg_env_avg)
+anova(model)
+
+model = lmerTest::lmer(as.numeric(st) ~ east + (1|year/month/day2), data = pg_env_avg)
+anova(model)
+
+model = lmerTest::lmer(as.numeric(sm2) ~ east + (1|year/month/day2), data = pg_env_avg)
+anova(model)
+
+model = lmerTest::lmer(as.numeric(rh) ~ east + (1|year/month/day2), data = pg_env_avg)
+anova(model)
+
+model = lmerTest::lmer(as.numeric(par) ~ east + (1|year/month/day2), data = pg_env_avg)
+anova(model)
+
+###seprate df for rainfall by summing the values to get total precipitation
+pg_env_rf <- data.avg %>% 
+  summarise(rf = sum(rf, na.rm = TRUE))
+pg_env_rf$east = pg_env_rf$Site=="EO12"|pg_env_rf$Site=="EO16"|pg_env_rf$Site=="NPS2"
+
+model = lmerTest::lmer(as.numeric(rf) ~ east + (1|year/month/day2), data = pg_env_rf)
 anova(model)
 
 ############################### Site
-posthoc <- glht(model, linfct = mcp(Site = "Tukey"))
+posthoc <- glht(model, linfct = mcp(east = "Tukey"))
 summary(posthoc)
 
 cld(posthoc,

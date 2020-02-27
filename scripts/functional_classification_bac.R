@@ -20,11 +20,12 @@ row.names(met) = met$code
 met$Year = as.factor(met$Year)
 met$pop.year = paste(met$Population, ".", gsub("20", "", met$Year))
 met$pop.year = gsub(" ", "", met$pop.year)
+met$aspect = ifelse(met$Population %in% c("EO12", "EO12g", "NPS2", "EO16"), "Easterly", "Westerly")
 
 guil = merge(met, guild, by = "row.names")
 #guil = subset(guil, Population == "EO12" | Population  == "EO14" | Population == "EO16")
 guil = subset(guil, plot == "mon" | plot == "ger")
-guil.bd = guil[,43:131] ##select only numeric columns for permanova
+guil.bd = guil[,44:132] ##select only numeric columns for permanova
 rownames(guil.bd) = guil$code
 guil.bd = decostand(guil.bd, method = "hellinger")
 rowSums(guil.bd)
@@ -33,7 +34,7 @@ dist_w_guild = vegdist(guil.bd, method = "bray")
 
 ###PERMANOVA
 
-a = adonis(dist_w_guild ~ guil$Population, permutations = 999)
+a = adonis(dist_w_guild ~ guil$aspect, permutations = 999)
 a
 
 ###ajust P-values
@@ -42,7 +43,7 @@ p.adjust(a$aov.tab$`Pr(>F)`, method = "bonferroni")
 ############relative abundance plot of guilds
 
 guil2 = group_by(guil, Population)
-guil2 = guil2[, c(5, 43:131)]
+guil2 = guil2[, c(5, 44:132)]
 tally(guil2)
 guil2 = data.frame(summarise_each(guil2, funs(sum(., na.rm = TRUE))))
 

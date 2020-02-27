@@ -16,13 +16,12 @@ library(dendextend)
 library(ggdendro)
 
 library(TSclust)
-library(gdata)
 library(imputeTS)
 
-data<-read.xls("data/chor_env_mon_germ_analysis_file.xlsx",
-               sheet=1,verbose=TRUE,na.strings="N/A")
+data <- read_excel("data/chor_env_mon_germ_analysis_file.xlsx",
+               sheet=1)
 
-data$date<-as.POSIXct(as.character(data$date),format="%m/%d/%Y",
+data$date <- as.POSIXct(data$date, format="%y-%m-%d %H:%M",
                       tz="America/Los_Angeles")
 
 data$year = year(data$date)
@@ -75,16 +74,15 @@ dist_w = vegdist(dat, method = "bray")
 
 met = as.data.frame(names(dis))
 row.names(met) = met[,1]
+library(splitstackshape)
 ccdata = cSplit(met, "names(dis)", ".")
 ccdata = plyr::rename(ccdata, c("names(dis)_1"="Site", "names(dis)_2"="Year", "names(dis)_3"="month"))
 ccdata = as.data.frame(ccdata)
 row.names(ccdata) = row.names(met)
 ccdata$code = row.names(ccdata)
+ccdata$east <- ccdata$Site =="EO12"|ccdata$Site=="NPS2"|ccdata$Site=="EO16"
 
-a = adonis(dis ~ ccdata$Site, permutations = 999)
-a
-
-a = mrpp(dis ~ ccdata$Site, permutations = 999)
+a = adonis2(dis ~ east, data = ccdata, permutations = 999)
 a
 
 h=hclust(dis)
