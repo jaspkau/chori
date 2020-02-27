@@ -42,7 +42,7 @@ width = ggplot(growth, aes(aspect, Width)) +
                                    size=9, angle=0)) +
   ylab("Plant Width (cm)") +
   xlab("Aspect") +
-  geom_errorbar(data=gavg, aes(ymin=lci, ymax=uci), group = 2,  width = 0.25, size = 0.1, alpha = 0.5) +
+  #geom_errorbar(data=gavg, aes(ymin=lci, ymax=uci), group = 2,  width = 0.25, size = 0.1, alpha = 0.5) #+
   stat_summary(fun.data = "mean_cl_boot", geom = "crossbar", color = "black", width = 0.2, size = 0.6) #fun.args = list(mult = 1)
 
 width
